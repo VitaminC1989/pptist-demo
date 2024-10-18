@@ -1,32 +1,51 @@
 /* eslint-env node */
-require('@rushstack/eslint-patch/modern-module-resolution')
+require('@rushstack/eslint-patch/modern-module-resolution');
 
 module.exports = {
   root: true,
   extends: [
     'plugin:vue/vue3-essential',
     'eslint:recommended',
-    '@vue/eslint-config-typescript'
+    '@vue/eslint-config-typescript',
+    'plugin:prettier/recommended', // 启用 eslint-plugin-prettier 和 eslint-config-prettier
+    '@vue/eslint-config-prettier' // 禁用 Vue 的 ESLint 规则和 Prettier 冲突的规则
   ],
   parserOptions: {
     ecmaVersion: 'latest'
   },
   rules: {
-    'curly': ['error', 'multi-line'],
-    'eqeqeq': ['error', 'always'],
-    'semi': ['error', 'never'],
-    'indent': ['error', 2, { 
-      'SwitchCase': 1,
-    }],
-    'quotes': ['error', 'single', {
-      'avoidEscape': true,
-      'allowTemplateLiterals': true,
-    }],
-    'key-spacing': ['error', {
-      'beforeColon': false,
-      'afterColon': true,
-      'mode': 'strict',
-    }],
+    'prettier/prettier': [
+      'error',
+      {
+        endOfLine: 'auto'
+      }
+    ],
+    curly: ['error', 'multi-line'],
+    eqeqeq: ['error', 'always'],
+    semi: ['error', 'never'],
+    indent: [
+      'error',
+      2,
+      {
+        SwitchCase: 1
+      }
+    ],
+    quotes: [
+      'error',
+      'single',
+      {
+        avoidEscape: true,
+        allowTemplateLiterals: true
+      }
+    ],
+    'key-spacing': [
+      'error',
+      {
+        beforeColon: false,
+        afterColon: true,
+        mode: 'strict'
+      }
+    ],
     'no-empty': 'error',
     'no-else-return': 'error',
     'no-multi-spaces': 'error',
@@ -35,10 +54,13 @@ module.exports = {
     'spaced-comment': ['error', 'always'],
     'arrow-spacing': 'error',
     'no-duplicate-imports': 'error',
-    'comma-spacing': ['error', {
-      'before': false,
-      'after': true,
-    }],
+    'comma-spacing': [
+      'error',
+      {
+        before: false,
+        after: true
+      }
+    ],
     'default-case': 'error',
     'consistent-this': ['error', '_this'],
     'max-depth': ['error', 8],
@@ -46,11 +68,14 @@ module.exports = {
     'no-multi-str': 'error',
     'space-infix-ops': 'error',
     'space-before-blocks': ['error', 'always'],
-    'space-before-function-paren': ['error', {
-      'named': 'never',
-      'anonymous': 'never',
-      'asyncArrow': 'always',
-    }],
+    'space-before-function-paren': [
+      'error',
+      {
+        named: 'never',
+        anonymous: 'never',
+        asyncArrow: 'always'
+      }
+    ],
     'keyword-spacing': ['error'],
     'prefer-const': 'error',
     'no-useless-return': 'error',
@@ -63,15 +88,18 @@ module.exports = {
     'no-console': 'warn',
     'no-debugger': 'error',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/ban-types': ['error', {
-      'extendDefaults': true,
-      'types': {
-        '{}': false,
-      },
-    }],
+    '@typescript-eslint/ban-types': [
+      'error',
+      {
+        extendDefaults: true,
+        types: {
+          '{}': false
+        }
+      }
+    ],
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/consistent-type-imports': 'error',
     'vue/multi-word-component-names': 'off',
-    'vue/no-reserved-component-names': 'off',
+    'vue/no-reserved-component-names': 'off'
   }
-}
+};
