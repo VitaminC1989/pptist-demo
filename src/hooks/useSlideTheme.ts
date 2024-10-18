@@ -234,45 +234,82 @@ export default () => {
     return colors
   }
   
-  // 创建原颜色与新颜色的对应关系表
+  /**
+   * 创建幻灯片原有颜色与新主题颜色的对应关系表
+   * @param {Slide} slide - 当前幻灯片对象
+   * @param {string[]} newColors - 新主题颜色数组
+   * @returns {{ [key: string]: string }} 原颜色到新颜色的映射对象
+   */
   const createSlideThemeColorMap = (slide: Slide, newColors: string[]): { [key: string]: string } => {
+    // 获取幻灯片中所有现有的颜色
     const oldColors = getSlideAllColors(slide)
+    // 初始化颜色映射对象
     const themeColorMap: { [key: string]: string } = {}
-  
+
+    // 如果原有颜色数量多于新主题颜色数量
     if (oldColors.length > newColors.length) {
+      // 使用 tinycolor 库生成类似的颜色
+      // 生成比所需数量多 10 个的类似颜色，以确保有足够的颜色可选
       const analogous = tinycolor(newColors[0]).analogous(oldColors.length - newColors.length + 10)
+      // 将生成的类似颜色转换为十六进制字符串，并去掉第一个（因为它就是原色）
       const otherColors = analogous.map(item => item.toHexString()).slice(1)
+      // 将新生成的颜色添加到新主题颜色数组中
       newColors.push(...otherColors)
     }
+
+    // 创建原有颜色到新颜色的映射
     for (let i = 0; i < oldColors.length; i++) {
       themeColorMap[oldColors[i]] = newColors[i]
     }
-  
+
+    // 输出日志，用于调试
+    console.log('[createSlideThemeColorMap] newColors oldColors themeColorMap', newColors, oldColors, themeColorMap)
+
+    // 返回创建好的颜色映射对象
     return themeColorMap
   }
   
-  // 设置幻灯片主题
+  /**
+   * 设置幻灯片主题
+   * 
+   * 此函数用于将指定的主题应用到给定的幻灯片上。它会更新幻灯片的背景和所有元素的颜色，
+   * 以匹配新的主题。
+   * 
+   * @param {Slide} slide - 要应用主题的幻灯片对象
+   * @param {PresetTheme} theme - 要应用的预设主题
+   */
   const setSlideTheme = (slide: Slide, theme: PresetTheme) => {
+    // 创建颜色映射，用于将旧颜色映射到新主题颜色
     const colorMap = createSlideThemeColorMap(slide, theme.colors)
-  
+
+    // 更新幻灯片背景
+    // 如果幻灯片没有背景或背景不是图片，则设置为主题的背景色
     if (!slide.background || slide.background.type !== 'image') {
       slide.background = {
         type: 'solid',
         color: theme.background,
       }
     }
+
+    // 遍历���灯片中的所有元素，根据元素类型更新其颜色和样式
     for (const el of slide.elements) {
       if (el.type === 'shape') {
+        // 更新形状填充颜色，使用颜色映射或保持原样
         el.fill = colorMap[tinycolor(el.fill).toRgbString()] || el.fill
+        // 移除渐变效果（如果有）
         if (el.gradient) delete el.gradient
       }
       if (el.type === 'text') {
+        // 更新文本填充颜色（如果有）
         if (el.fill) el.fill = colorMap[tinycolor(el.fill).toRgbString()] || el.fill
+        // 设置默认文本颜色和字体
         el.defaultColor = theme.fontColor
         el.defaultFontName = theme.fontname
       }
       if (el.type === 'table') {
+        // 更新表格主题颜色
         if (el.theme) el.theme.color = colorMap[tinycolor(el.theme.color).toRgbString()] || el.theme.color
+        // 更新表格中所有单元格的文本颜色和字体
         for (const rowCells of el.data) {
           for (const cell of rowCells) {
             if (cell.style) {
@@ -283,23 +320,49 @@ export default () => {
         }
       }
       if (el.type === 'chart') {
+        // 更新图表主题颜色
         el.themeColors = [colorMap[tinycolor(el.themeColors[0]).toRgbString()]] || el.themeColors
+        // 更新图表文本颜色
         el.textColor = theme.fontColor
       }
-      if (el.type === 'line') el.color = colorMap[tinycolor(el.color).toRgbString()] || el.color
-      if (el.type === 'audio') el.color = colorMap[tinycolor(el.color).toRgbString()] || el.color
-      if (el.type === 'latex') el.color = theme.fontColor
+      if (el.type === 'line') {
+        // 更新线条颜色
+        el.color = colorMap[tinycolor(el.color).toRgbString()] || el.color
+      }
+      if (el.type === 'audio') {
+        // 更新音频元素颜色
+        el.color = colorMap[tinycolor(el.color).toRgbString()] || el.color
+      }
+      if (el.type === 'latex') {
+        // 更新LaTeX元素文本颜色
+        el.color = theme.fontColor
+      }
     }
   }
   
-  // 应用预置主题（单页）
+  /**
+   * 将预设主题应用到当前选中的单个幻灯片
+   * 
+   * @param {PresetTheme} theme - 要应用的预设主题对象
+   */
   const applyPresetThemeToSingleSlide = (theme: PresetTheme) => {
+    // 深拷贝当前选中的幻灯片，以避免直接修改原始数据
     const newSlide: Slide = JSON.parse(JSON.stringify(currentSlide.value))
+    
+    // 输出日志，用于调试
+    console.log('[applyPresetThemeToSingleSlide] newSlide', newSlide)
+    
+    // 调用 setSlideTheme 函数，将预设主题应用到新的幻灯片对象
     setSlideTheme(newSlide, theme)
+    
+    // 使用 slidesStore 的 updateSlide 方法更新幻灯片
+    // 只更新背景和元素，保留其他属性不变
     slidesStore.updateSlide({
       background: newSlide.background,
       elements: newSlide.elements,
     })
+    
+    // 添加历史快照，以支持撤销/重做功能
     addHistorySnapshot()
   }
   
